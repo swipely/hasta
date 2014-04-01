@@ -1,0 +1,10 @@
+{
+  "id": "EMRJob1",
+  "type": "EmrActivity",
+  "onFail": { "ref": "FailureNotify" },
+  "schedule": { "ref": "Nightly" },
+  "runsOn": { "ref": "MenuIntelEMRCluster" },
+  "step": "/home/hadoop/contrib/streaming/hadoop-streaming.jar,-input,s3n://data-bucket/path/to/data/#{format(@scheduledStartTime,'YYYY-MM-dd_HHmmss')}/input1/,-output,s3://data-bucket/path/to/data/#{format(@scheduledStartTime,'YYYY-MM-dd_HHmmss')}/output/,-mapper,cat,-reducer,s3n://steps-bucket/path/to/reducer.rb,-cacheFile,s3://data-bucket/path/to/mappings.yml#mappings.yml,-cacheFile,s3://data-bucket/path/to/ignored.yml#ignored.yml,-cmdenv,API_KEY=123456,-cmdenv,ENVIRONMENT_NAME=uat",
+  "input": [ { "ref": "S3Input1" }, { "ref": "S3Input2" }, { "ref": "S3Input3" } ],
+  "output": { "ref": "S3Output" }
+}

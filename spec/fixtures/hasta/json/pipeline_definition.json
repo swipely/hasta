@@ -1,0 +1,135 @@
+{
+  "objects": [
+    {
+      "id": "Default",
+      "role": "role-aggregator",
+      "resourceRole": "role-aggregator",
+      "failureAndRerunMode": "cascade",
+      "scheduleType": "cron",
+      "onFail": { "ref": "FailureNotify" }
+    },
+
+    {
+      "id": "Nightly",
+      "type": "Schedule",
+      "startDateTime": "2014-03-26T18:00:00",
+      "period": "12 hours"
+    },
+
+    {
+      "id": "SuccessNotify",
+      "type": "SnsAlarm",
+      "topicArn": "arn:aws:sns:us-east-1:999999999999:datapipeline-name",
+      "subject": "SUCCESS: pipeline step #{node.name}",
+      "message": "pipeline step SUCCESS\n\nScheduled start: #{node.@scheduledStartTime}\nActual start: #{node.@actualStartTime}\nActual end:\n#{node.@actualEndTime}"
+    },
+
+    {
+      "id": "FailureNotify",
+      "type": "SnsAlarm",
+      "topicArn": "arn:aws:sns:us-east-1:999999999999:datapipeline-name",
+      "subject": "FAILURE: pipeline step #{node.name}",
+      "message": "pipeline step FAILED #{node.name}\n\nScheduled start: #{node.@scheduledStartTime}\nError message:\n#{node.errorMessage}\nError stack trace:\n#{node.errorStackTrace}"
+    },
+
+    {
+      "id": "S3FirstInput",
+      "type": "S3DataNode",
+      "schedule": { "ref": "Nightly" },
+      "directoryPath": "s3://data-bucket/path/to/data/dir1/"
+    },
+
+    {
+      "id": "S3SecondInput",
+      "type": "S3DataNode",
+      "schedule": { "ref": "Nightly" },
+      "directoryPath": "s3://data-bucket/path/to/data/dir2/"
+    },
+
+    {
+      "id": "S3ThirdInput",
+      "type": "S3DataNode",
+      "schedule": { "ref": "Nightly" },
+      "filePath": "s3://datapipeline-assets/path/to/data/file.csv"
+    },
+
+    {
+      "id": "S3Output",
+      "type": "S3DataNode",
+      "schedule": { "ref": "Nightly" },
+      "directoryPath": "s3://data-bucket/path/to_data/results/"
+    },
+
+    {
+      "id": "TestPipelineEC2Resource",
+      "type": "Ec2Resource",
+      "instanceType": "m1.large",
+      "schedule": { "ref": "Nightly" },
+      "logUri": "s3://logs-bucket/path/to/test_pipeline/logs/TestPipelineEC2Resource",
+      "terminateAfter": "6 hours",
+      "keyPair": "pipeline-debug",
+      "securityGroups": ["s-pipe-appdb"]
+    },
+
+    {
+      "id": "TestPipelineEMRCluster",
+      "type": "EmrCluster",
+      "masterInstanceType": "m1.large",
+      "taskInstanceType": "m1.large",
+      "coreInstanceType": "m1.large",
+      "coreInstanceCount": "2",
+      "terminateAfter": "1 hour",
+      "schedule": { "ref": "Nightly" },
+      "enableDebugging": "true",
+      "bootstrapAction": "s3://steps-bucket/test_pipeline/steps/bootstrap_emr.sh",
+      "emrLogUri": "s3://logs-bucket/path/to/test_pipeline/logs/RecentSalesPipelineEMRLogs",
+      "logUri": "s3://logs-bucket/path/to/test_pipeline/logs/TestPipelineEMRCluster"
+    },
+
+    {
+      "id": "BootstrapEnvironment",
+      "type": "ShellCommandActivity",
+      "onFail": { "ref": "FailureNotify" },
+      "stdout": "s3://logs-bucket/path/to/test_pipeline/logs/BootstrapEnvironment/stdout",
+      "stderr": "s3://logs-bucket/path/to/test_pipeline/logs/BootstrapEnvironment/stderr",
+      "schedule": { "ref": "Nightly" },
+      "runsOn": { "ref": "TestPipelineEC2Resource" },
+      "scriptUri": "s3://steps-bucket/test_pipeline/steps/bootstrap_ec2.sh"
+    },
+
+    {
+      "id": "TouchEMRCluster",
+      "type": "ShellCommandActivity",
+      "onFail": { "ref": "FailureNotify" },
+      "schedule": { "ref": "Nightly" },
+      "runsOn": { "ref": "TestPipelineEMRCluster" },
+      "command": "true"
+    },
+
+    {
+      "id": "EMRJob1",
+      "type": "EmrActivity",
+      "onFail": { "ref": "FailureNotify" },
+      "schedule": { "ref": "Nightly" },
+      "runsOn": { "ref": "TestPipelineEMRCluster" },
+      "step": "/home/hadoop/contrib/streaming/hadoop-streaming.jar,-input,s3://data-bucket/path/to/data/dir1/,-input,s3://data-bucket/path/to/data/dir2/,-input,s3://data-bucket/path/to/data/file.csv,-output,s3://data-bucket/path/to_data/results/,-mapper,s3n://steps-bucket/test_pipeline/steps/mapper.rb,-reducer,s3n://steps-bucket/test_pipeline/steps/reducer.rb,-cacheFile,s3n://steps-bucket/test_pipeline/steps/types.rb#types.rb,-cacheFile,s3://data-bucket/path/to/data/notes.yml#notes.yml,-cmdenv,API_KEY=123456",
+      "input": [ { "ref": "S3FirstInput" }, { "ref": "S3SecondInput" }, { "ref": "S3ThirdInput" } ],
+      "output": { "ref": "S3Output" }
+    },
+
+    {
+      "id": "Complete",
+      "type": "ShellCommandActivity",
+      "onFail": { "ref": "FailureNotify" },
+      "schedule": { "ref": "Nightly" },
+      "onSuccess": { "ref": "SuccessNotify" },
+      "runsOn": { "ref": "TestPipelineEC2Resource" },
+      "dependsOn": [
+        { "ref": "TouchEMRCluster" },
+        { "ref": "EMRJob1" }
+      ],
+      "command": "true"
+    }
+
+  ]
+}

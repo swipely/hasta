@@ -1,0 +1,1 @@
+Thing = Struct.new(:line)
