@@ -13,6 +13,8 @@ module Hasta
     end
 
     def each_line
+      return enum_for(:each_line) unless block_given?
+
       sorted_lines.each do |line|
         yield line
       end
