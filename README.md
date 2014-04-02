@@ -21,7 +21,13 @@ Or install it yourself as:
 
 ## Usage
 
-1. Add the `Hasta::Tasks:Runner` task to your project's Rakefile
+1. Require the Hasta Rake tasks in your project's Rakefile
+
+   ```ruby
+   require 'hasta/tasks'
+   ```
+
+2. Add the `Hasta::Tasks:Runner` task to your project's Rakefile
 
   ```ruby
   Hasta::Tasks::Runner.new do |task, opts|
@@ -31,14 +37,14 @@ Or install it yourself as:
     task.project_root = File.dirname(__FILE__)
   end
 ```
-2. (Optional) Register a custom `sort_by` for the mapper results by adding the following block of code to your project's Rakefile
+3. (Optional) Register a custom `sort_by` for the mapper results by adding the following block of code to your project's Rakefile
 
   ```ruby
   Hasta.configure do |config|
-    config.sort_by = { |key| # TODO: define the sort key for the mapper results }
+    config.sort_by { |line| # TODO: define the sort key for the mapper results }
   end
 ```
-3. Run the test from the command line by calling:
+4. Run the test from the command line by calling:
 
   ```
 % rake runner[<job-id>]
