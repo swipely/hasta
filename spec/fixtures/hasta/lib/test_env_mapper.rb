@@ -2,19 +2,19 @@
 
 # Copyright Swipely, Inc.  All rights reserved.
 
-class TestIdentityMapper
+class TestEnvMapper
   def map(line)
     line
   end
 end
 
 if __FILE__ == $0
-  mapper = TestIdentityMapper.new
+  mapper = TestEnvMapper.new
 
-  $stderr.puts "This is an error message"
+  prefix = ENV['LINE_PREFIX']
   ARGF.each_line do |line|
     if mapped_line = mapper.map(line.strip)
-      puts mapped_line
+      puts [prefix, mapped_line].join
     end
   end
 end

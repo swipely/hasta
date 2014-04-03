@@ -2,19 +2,20 @@
 
 # Copyright Swipely, Inc.  All rights reserved.
 
-class TestIdentityMapper
+require 'types'
+
+class TestTypesMapper
   def map(line)
     line
   end
 end
 
 if __FILE__ == $0
-  mapper = TestIdentityMapper.new
+  mapper = TestTypesMapper.new
 
-  $stderr.puts "This is an error message"
   ARGF.each_line do |line|
     if mapped_line = mapper.map(line.strip)
-      puts mapped_line
+      puts Thing.new(mapped_line).line
     end
   end
 end

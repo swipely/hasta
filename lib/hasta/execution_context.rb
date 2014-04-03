@@ -1,69 +1,89 @@
 # Copyright Swipely, Inc.  All rights reserved.
 
+require 'open3'
+
 require 'hasta/s3_data_sink'
 
 module Hasta
   # Executes each local EMR job in isolation
   class ExecutionContext
-    def initialize(ruby_files = [], env = {})
-      @ruby_files = ruby_files
-      @env = env
-    end
+    # A Subprocess
+    class Subprocess
+      attr_reader :stdin, :stdout, :stderr
 
-    def execute
-      reader, writer = IO.pipe
-
-      pid = fork do
-        reader.close
-        execute_job(writer) { yield }
+      def initialize(ruby_files, env)
+        @ruby_files = ruby_files
+        @env = env
       end
 
-      writer.close
-      process_result(pid, reader)
+      def start(source_file, data_source, data_sink)
+        Open3.popen3(*cmd_line(source_file)) do |stdin, stdout, stderr, wait_thr|
+          @stdin, @stdout, @stderr, @wait_thr = stdin, stdout, stderr, wait_thr
+
+          yield self
+
+          if (exit_code = wait_thr.value.exitstatus) != 0
+            raise ExecutionError, "#{source_file} exited with non-zero status: #{exit_code}"
+          end
+        end
+      end
+
+      private
+
+      attr_reader :source_file, :env, :ruby_files
+
+      def cmd_line(source_file)
+        [env, ruby_exe_path] + load_path + [source_file]
+      end
+
+      def ruby_exe_path
+        File.join(RbConfig::CONFIG['bindir'], RbConfig::CONFIG['ruby_install_name'])
+      end
+
+      def load_path
+        ruby_files.
+          map { |file| File.expand_path(File.dirname(file)) }.
+          uniq.
+          map { |path| ['-I', path] }.
+          flatten
+      end
+    end
+
+    def initialize(ruby_files = [], env = {})
+      @sub_process = Subprocess.new(ruby_files, env)
+    end
+
+    def execute(source_file, data_source, data_sink)
+      sub_process.start(source_file, data_source, data_sink) do |sub_process|
+        [
+          stream_input(data_source, sub_process.stdin),
+          stream_output(sub_process.stdout) { |line| data_sink << line },
+          stream_output(sub_process.stderr) { |line| Hasta.logger.error line.strip },
+        ].each(&:join)
+      end
+
+      data_sink.close
     end
 
     private
 
-    attr_reader :ruby_files, :env
+    attr_reader :sub_process
 
-    def execute_job(writer)
-      begin
-        setup_environment
+    def stream_input(data_source, io)
+      Thread.new do
+        data_source.each_line do |line|
+          io.puts line
+        end
 
-        data_sink = yield
-
-        writer.puts 0
-        writer.puts data_sink.s3_uri
-      rescue => ex
-        Hasta.logger.error "#{ex.message}\n#{ex.backtrace.join("\n")}"
-        writer.puts -1
-        writer.puts "#{ex.class.name}: #{ex.message}"
+        io.close_write
       end
     end
 
-    def setup_environment
-      env.each do |name, value|
-        ENV[name] = value
-      end
-
-      ruby_files.map { |file| File.dirname(file) }.uniq.each do |dir|
-        load_path_dir = File.expand_path(dir)
-        Hasta.logger.debug "Adding directory: #{load_path_dir} to $LOAD_PATH"
-        $LOAD_PATH.unshift(load_path_dir)
-      end
-    end
-
-    def process_result(pid, reader)
-      status = reader.gets.to_i
-      if status == 0
-        result_uri = reader.gets.strip
-
-        Process.wait(pid)
-        result_uri
-      else
-        message = reader.gets
-        Process.wait(pid)
-        raise ExecutionError, message
+    def stream_output(io)
+      Thread.new do
+        StringIO.new(io.read).each_line do |line|
+          yield line
+        end
       end
     end
   end

@@ -4,43 +4,36 @@ require 'spec_helper'
 
 require 'hasta/execution_context'
 require 'hasta/s3_data_source'
+require 'hasta/in_memory_data_sink'
+require 'hasta/in_memory_data_source'
 
 describe Hasta::ExecutionContext do
   describe '#execute' do
-    before do
-      lines.each { |line| sink << line }
-    end
-
-    let(:output_s3_uri) { Hasta::S3URI.parse('s3://data-bucket/path/to/output/') }
-    let(:sink) { Hasta::S3DataSink.new(output_s3_uri) }
+    let(:source_file) { 'spec/fixtures/hasta/lib/test_identity_mapper.rb' }
+    let(:data_source) { Hasta::InMemoryDataSource.new(lines) }
+    let(:data_sink) { Hasta::InMemoryDataSink.new }
     let(:lines) { %w[First Second Third] }
-    let(:exp_lines) { lines.join("\n,").split(',') }
-    let(:block) { proc { sink.close } }
-    let(:result_data_source) {
-      Hasta::S3DataSource.new(Hasta::S3URI.parse(subject.execute(&block)))
-    }
+    let(:exp_lines) { lines.map { |line| "#{line}\n" } }
+    let(:results) { subject.execute(source_file, data_source, data_sink).data_source }
 
     it 'returns the execution results' do
-      expect(result_data_source.to_a).to eq(exp_lines)
+      expect(results.to_a).to eq(exp_lines)
     end
 
     context 'given env variables' do
       subject { described_class.new([], env) }
 
-      let(:env) { { 'API_KEY' => '123456' } }
-      let(:block) {
-        proc {
-          raise 'Error' unless ENV['API_KEY'] == '123456'
-          sink
-        }
-      }
+      let(:env) { { 'LINE_PREFIX' => prefix } }
+      let(:prefix) { 'Copyright 2014 ' }
+      let(:source_file) { 'spec/fixtures/hasta/lib/test_env_mapper.rb' }
+      let(:exp_lines) { lines.map { |line| "#{prefix}#{line}\n" } }
 
       it 'returns the execution results' do
-        expect(result_data_source.to_a).to eq(exp_lines)
+        expect(results.to_a).to eq(exp_lines)
       end
 
       it 'does not set the ENV of the parent process' do
-        expect(ENV['API_KEY']).to be_nil
+        expect(ENV['LINE_PREFIX']).to be_nil
       end
     end
 
@@ -50,16 +43,10 @@ describe Hasta::ExecutionContext do
       let(:files) { [file] }
       let(:file) { "#{File.dirname(__FILE__)}/../fixtures/hasta/lib/types.rb" }
       let(:dir) { File.expand_path(File.dirname(file)) }
-      let(:block) {
-        proc {
-          require 'types'
-          klass = Object.const_get('Thing')
-          sink
-        }
-      }
+      let(:source_file) { 'spec/fixtures/hasta/lib/test_types_mapper.rb' }
 
       it 'returns the execution results' do
-        expect(result_data_source.to_a).to eq(exp_lines)
+        expect(results.to_a).to eq(exp_lines)
       end
 
       it 'does not affect the $LOAD_PATH of the parent process' do
@@ -68,12 +55,12 @@ describe Hasta::ExecutionContext do
     end
 
     context 'given job failure' do
-      let(:block) {
-        proc { klass = Object.const_get('UndefinedClass') }
-      }
+      let(:source_file) { 'spec/fixtures/hasta/lib/failing_mapper.rb' }
 
       it 'raises' do
-        expect { subject.execute(&block) }.to raise_error(Hasta::ExecutionError)
+        expect {
+          subject.execute(source_file, data_source, data_sink)
+        }.to raise_error(Hasta::ExecutionError)
       end
     end
   end
