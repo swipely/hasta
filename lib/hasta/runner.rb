@@ -16,12 +16,12 @@ module Hasta
 
     def run(data_sources, data_sink, ruby_files = [], env = Hasta::Env.new)
       Hasta.logger.debug "Starting Job: #{job_name}"
-      ExecutionContext.new(ruby_files, env.setup).execute do
-        if reducer
-          reducer.reduce(mapper.map(data_sources).data_source, data_sink)
-        else
-          mapper.map(data_sources, data_sink)
-        end
+
+      context = ExecutionContext.new(ruby_files, env.setup)
+      if reducer
+        reducer.reduce(context, mapper.map(context, data_sources).data_source, data_sink)
+      else
+        mapper.map(context, data_sources, data_sink)
       end
     end
 
