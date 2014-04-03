@@ -13,7 +13,7 @@ module Hasta
     end
 
     def each_line
-      return enum_for(__callee__) unless block_given?
+      return enum_for(:each_line) unless block_given?
 
       lines.each do |line|
         yield line
