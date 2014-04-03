@@ -11,6 +11,10 @@ module Hasta
       @combined_storage = combined_storage
     end
 
+    def name
+      s3_uri.to_s
+    end
+
     def each_line
       return enum_for(:each_line) unless block_given?
 
