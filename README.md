@@ -81,6 +81,28 @@ If you wish to use different data for an input, you need to put that data into t
 
 To control which credentials Hasta is using when communicating with S3, update your `~/.fog` file or set the `FOG_CREDENTIAL` environment variable to the appropriate credential.
 
+## Data Filtering
+
+Hasta automatically filters input data to minimize execution time.
+By default, Hasta looks for a file in the current directory named `filter_config.yml` for the filtering configuration.
+You can change the filter configuration file by setting the `HASTA_DATA_FILTER_FILE` environment variable.
+If you want to disable data filtering, you can set the `HASTA_DATA_FILTERING` environment variable to `OFF`.
+
+### Filter Configuration
+
+The filter configuration file is a YAML file containing a Hash that maps S3 URIs (as Strings) to Arrays of regular expressions (also as Strings)
+Any line of input data that comes from an S3 URI whose prefix matches one of the S3 URIs in the filter configuration that matches at least one of the regular expressions is included in the test input.
+Any line of input data that comes from an S3 URI whose prefix matches one of the S3 URIs in the filter configuration that does not match any of the regular expressions is excluded from the test input.
+Input data that does not come from an S3 URI whose prefix matches on of the S3 URIs in the filter configuration is not filtered.
+If an input S3 URI matches multiple S3 URIs in the filter configuration, the most specific match is the one that is chosen for filtering purposes.
+
+### Caching
+
+Hasta caches the filtered input data locally to improve performance.
+The first time a data source is referenced in a test, the filtered results are written locally.
+Subsequent tests that access the same data source with the same filter are read from the local cache.
+This results in a significant speedup on subsequent runs when dealing with aggressively filtered large data sets.
+
 ## Execution
 
 Hasta sets up the environent variables specified by the `-cmdenv` switch in the job definition.
