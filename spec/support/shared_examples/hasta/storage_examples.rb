@@ -86,7 +86,7 @@ module Hasta
 
             it { expect(subject.exists?(s3_uri)).to be_true }
             it { expect(subject.files_for(s3_uri).length).to eq(1) }
-            it { expect(subject.files_for(s3_uri).first.body).to eq(contents) }
+            it { expect(subject.files_for(s3_uri).first.each_line.to_a).to eq([contents]) }
           end
 
           context 'that does not exist' do

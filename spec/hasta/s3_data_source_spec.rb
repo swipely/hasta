@@ -17,7 +17,11 @@ describe Hasta::S3DataSource do
       end
 
       let(:files) {
-        lines.map { |file_lines| double(:body => file_lines.join("\n"), :key => 'file_name.txt') }
+        lines.map { |file_lines|
+          Hasta::S3File.new(
+            double('Fog::File', :body => file_lines.join("\n"), :key => 'file_name.txt')
+          )
+        }
       }
       let(:lines) { [ %w[First Second Third], %w[Fourth Fifth] ] }
 

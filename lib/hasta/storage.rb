@@ -1,5 +1,7 @@
 # Copyright Swipely, Inc.  All rights reserved.
 
+require 'hasta/s3_file'
+
 module Hasta
   # Common file storage methods used by the local and S3 storage providers
   module Storage
@@ -16,11 +18,13 @@ module Hasta
     end
 
     def files_for(s3_uri)
-      if s3_uri.file?
+      s3_files = if s3_uri.file?
         [file!(s3_uri)]
       else
         files(bucket!(s3_uri), s3_uri)
       end
+
+      S3File.wrap_files(s3_files)
     end
 
     private
