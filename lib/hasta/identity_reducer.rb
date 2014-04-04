@@ -9,7 +9,7 @@ module Hasta
     def self.reduce(_, data_source, data_sink = InMemoryDataSink.new)
       Hasta.logger.debug "Starting Identity Reducer"
       SortedDataSource.new(data_source, Hasta.sort_by).each_line do |line|
-        data_sink << line
+        data_sink << line.rstrip
       end
 
       data_sink.close.tap { Hasta.logger.debug "Finished Identity Reducer" }
