@@ -13,7 +13,7 @@ describe Hasta::ExecutionContext do
     let(:data_source) { Hasta::InMemoryDataSource.new(lines) }
     let(:data_sink) { Hasta::InMemoryDataSink.new }
     let(:lines) { %w[First Second Third] }
-    let(:exp_lines) { lines.map { |line| "#{line}\n" } }
+    let(:exp_lines) { lines.map { |line| "#{line}\t" } }
     let(:results) { subject.execute(source_file, data_source, data_sink).data_source }
 
     it 'returns the execution results' do
@@ -26,7 +26,7 @@ describe Hasta::ExecutionContext do
       let(:env) { { 'LINE_PREFIX' => prefix } }
       let(:prefix) { 'Copyright 2014 ' }
       let(:source_file) { 'spec/fixtures/hasta/lib/test_env_mapper.rb' }
-      let(:exp_lines) { lines.map { |line| "#{prefix}#{line}\n" } }
+      let(:exp_lines) { lines.map { |line| "#{prefix}#{line}\t" } }
 
       it 'returns the execution results' do
         expect(results.to_a).to eq(exp_lines)

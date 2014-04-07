@@ -10,8 +10,8 @@ describe Hasta::IdentityReducer do
     subject { described_class }
 
     let(:sink) { Hasta::InMemoryDataSink.new }
-    let(:lines) { ["First\n", "Second\n", "Third\n"] }
-    let(:exp_lines) { lines.flatten.map(&:rstrip) }
+    let(:lines) { ["Key1\tFirst\n", "Key2\tSecond\n", "Key3\tThird\n"] }
+    let(:exp_lines) { lines.map(&:rstrip) }
     let(:source) { Hasta::InMemoryDataSource.new(lines) }
     let(:context) { double(Hasta::ExecutionContext) }
 

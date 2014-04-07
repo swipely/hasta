@@ -1,20 +1,18 @@
 # Copyright Swipely, Inc.  All rights reserved.
 
-require 'forwardable'
-
 require 'hasta/in_memory_data_source'
 
 module Hasta
   # Data sink for writing data in-memory
   class InMemoryDataSink
-    extend Forwardable
-
     attr_reader :name
-
-    def_delegators :lines, :<<
 
     def initialize(name=nil)
       @name = name
+    end
+
+    def <<(line)
+      lines << Hasta.tab_separated_line(line)
     end
 
     def data_source

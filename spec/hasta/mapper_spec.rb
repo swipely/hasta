@@ -12,7 +12,7 @@ describe Hasta::Mapper do
 
     let(:input_source) { Hasta::InMemoryDataSource.new(input_lines, "Test Input") }
     let(:input_sources) { [input_source] }
-    let(:input_lines) { ['One', 'Two', 'Three', 'Four'] }
+    let(:input_lines) { ["Key1\tOne", "Key2\tTwo", "Key3\tThree", "Key4\tFour"] }
     let(:output_lines) { input_lines }
     let(:context) { Hasta::ExecutionContext.new }
 
@@ -20,7 +20,7 @@ describe Hasta::Mapper do
 
     it 'writes all of the mapped lines to the sink' do
       expect(subject.map(context, input_sources, sink)).to eq(sink)
-      expect(sink.data_source.to_a).to eq(input_lines.map { |line| "#{line}\n" })
+      expect(sink.data_source.to_a).to eq(input_lines)
     end
   end
 end

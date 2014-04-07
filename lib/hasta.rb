@@ -29,6 +29,14 @@ module Hasta
     yield config
   end
 
+  def tab_separated_line(line)
+    if line.include?("\t")
+      line
+    else
+      "#{line}\t"
+    end
+  end
+
   private
 
   def config

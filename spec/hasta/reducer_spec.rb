@@ -13,7 +13,7 @@ describe Hasta::Reducer do
     let(:input_source) { Hasta::InMemoryDataSource.new(input_lines) }
     let(:input_lines) { ["Small", "Medium", "Large"] }
     let(:sorted_lines) { ["Large", "Medium", "Small"] }
-    let(:exp_lines) { sorted_lines.map { |line| "#{line}\n"} }
+    let(:exp_lines) { sorted_lines.map { |line| "#{line}\t"} }
     let(:context) { Hasta::ExecutionContext.new }
 
     let(:sink) { Hasta::InMemoryDataSink.new }

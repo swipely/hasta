@@ -13,7 +13,7 @@ module Hasta
     end
 
     def <<(line)
-      lines << line
+      lines << Hasta.tab_separated_line(line)
     end
 
     def close

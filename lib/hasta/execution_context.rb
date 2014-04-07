@@ -58,7 +58,7 @@ module Hasta
         [
           stream_input(data_source, sub_process.stdin),
           stream_output(sub_process.stdout) { |line| data_sink << line },
-          stream_output(sub_process.stderr) { |line| Hasta.logger.error line.strip },
+          stream_output(sub_process.stderr) { |line| Hasta.logger.error line },
         ].each(&:join)
       end
 
@@ -82,7 +82,7 @@ module Hasta
     def stream_output(io)
       Thread.new do
         StringIO.new(io.read).each_line do |line|
-          yield line
+          yield line.rstrip
         end
       end
     end

@@ -13,7 +13,7 @@ describe Hasta::IdentityMapper do
 
     let(:sink) { Hasta::InMemoryDataSink.new }
     let(:lines) { [["First\n"], ["Second\n", "Third\n"]] }
-    let(:exp_lines) { lines.flatten.map(&:rstrip) }
+    let(:exp_lines) { lines.flatten.map(&:rstrip).map { |line| "#{line}\t" } }
     let(:sources) { lines.map { |source_lines| Hasta::InMemoryDataSource.new(source_lines) } }
     let(:context) { double(Hasta::ExecutionContext) }
 
