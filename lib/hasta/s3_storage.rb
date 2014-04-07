@@ -12,7 +12,7 @@ module Hasta
 
     private
 
-    def files(s3_bucket, s3_uri)
+    def fog_files(s3_bucket, s3_uri)
       s3_bucket.files.all('prefix' => s3_uri.path).reject { |file|
         file.key == s3_uri.path || (file_s3_uri(file).parent != s3_uri)
       }

@@ -32,7 +32,7 @@ module Hasta
       s3_uri
     end
 
-    def files(s3_bucket, s3_uri)
+    def fog_files(s3_bucket, s3_uri)
       s3_bucket.files.select { |file|
         file.key.start_with?(s3_uri.path) && file_s3_uri(file).parent == s3_uri
       }

@@ -11,20 +11,18 @@ module Hasta
 
     def exists?(s3_uri)
       if s3_uri.file?
-        !!file(s3_uri)
+        !!fog_file(s3_uri)
       elsif s3_bucket = bucket(s3_uri)
-        !files(s3_bucket, s3_uri).empty?
+        !fog_files(s3_bucket, s3_uri).empty?
       end
     end
 
     def files_for(s3_uri)
-      s3_files = if s3_uri.file?
-        [file!(s3_uri)]
+      if s3_uri.file?
+        [s3_file!(s3_uri)]
       else
-        files(bucket!(s3_uri), s3_uri)
+        s3_files(bucket!(s3_uri), s3_uri)
       end
-
-      S3File.wrap_files(s3_files)
     end
 
     private
@@ -35,7 +33,15 @@ module Hasta
       fog_storage.directories.get(s3_uri.bucket)
     end
 
-    def file(s3_uri)
+    def s3_file!(s3_uri)
+      S3File.wrap(fog_file!(s3_uri))
+    end
+
+    def s3_files(bucket, s3_uri)
+      fog_files(bucket, s3_uri).map { |fog_file| S3File.wrap(fog_file) }
+    end
+
+    def fog_file(s3_uri)
       (s3_bucket = bucket(s3_uri)) && s3_bucket.files.get(s3_uri.path)
     end
 
@@ -43,8 +49,8 @@ module Hasta
       bang!(s3_uri) { bucket(s3_uri) }
     end
 
-    def file!(s3_uri)
-      bang!(s3_uri) { file(s3_uri) }
+    def fog_file!(s3_uri)
+      bang!(s3_uri) { fog_file(s3_uri) }
     end
 
     def create_bucket(bucket_name)
