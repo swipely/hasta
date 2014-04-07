@@ -46,6 +46,8 @@ Or install it yourself as:
   ```
 % rake runner[<job-id>,<scheduled-start-time>]
 ```
+  Where `job-id` is the id of the EMR job you are testing and `scheduled-start-time` is an [ISO 8601](http://en.wikipedia.org/wiki/ISO_8601)-formatted time specifying the time to use when interpolating any `@scheduledStartTime` variable references in your pipeline definition file.
+  If your pipeline definition file has no `@scheduledStartTime` variable references, there is no need to include a `scheduled-start-time` argument.
 
 ## Configuration
 
