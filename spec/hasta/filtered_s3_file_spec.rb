@@ -26,7 +26,7 @@ describe Hasta::FilteredS3File do
 
     context 'given a filter that drops every line' do
       let(:filter) { Hasta::Filter.new(/.^/) }
-      let(:exp_fingerprint) { '86dbb833a45ad24fd37614e0c7ffd8e8' }
+      let(:exp_fingerprint) { '89a35b5f6745b5bab65cb918e9933df4' }
 
       it { expect(subject.each_line.to_a).to be_empty }
       it { expect(subject.body).to be_empty }
@@ -35,7 +35,7 @@ describe Hasta::FilteredS3File do
 
     context 'given a filter that drops some lines' do
       let(:filter) { Hasta::Filter.new(/\A[1,3]/) }
-      let(:exp_fingerprint) { '5d4cb405a76c3c3c910633a7da3709a4' }
+      let(:exp_fingerprint) { '46426cde7e24ab46ed95913c02623593' }
 
       it { expect(subject.each_line.to_a).to eq(lines.values_at(0, 2)) }
       it { expect(subject.body).to eq(lines.values_at(0, 2).join) }

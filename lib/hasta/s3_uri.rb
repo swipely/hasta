@@ -20,7 +20,7 @@ module Hasta
     end
 
     def directory?
-      path.end_with?('/')
+      path.nil? || path.end_with?('/')
     end
 
     def file?
@@ -33,6 +33,24 @@ module Hasta
       else
         ''
       end
+    end
+
+    def depth
+      slashes = (path && path.chars.count { |ch| ch == '/' }) || 0
+      if path.nil?
+        1
+      elsif directory?
+        1 + slashes
+      else
+        2 + slashes
+      end
+    end
+
+    def start_with?(s3_uri)
+      return true if self == s3_uri
+      return false if s3_uri.file?
+
+      (bucket == s3_uri.bucket) && (s3_uri.path.nil? || path.start_with?(s3_uri.path))
     end
 
     def parent
