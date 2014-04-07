@@ -23,7 +23,7 @@ module Hasta
     private
 
     def sorted_data_source(data_source)
-      SortedDataSource.new(data_source, Hasta.sort_by)
+      SortedDataSource.new(data_source)
     end
   end
 end

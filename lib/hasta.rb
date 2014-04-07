@@ -21,7 +21,6 @@ module Hasta
     :logger,
     :project_root,
     :project_steps,
-    :sort_by,
   ]
 
   def_delegators :config, *DELEGATED_ATTRS

@@ -37,14 +37,7 @@ Or install it yourself as:
     task.project_root = File.dirname(__FILE__)
   end
 ```
-3. (Optional) Register a custom `sort_by` for the mapper results by adding the following block of code to your project's Rakefile if Ruby's default String sorting will not group your mapper results correctly.
-
-  ```ruby
-  Hasta.configure do |config|
-    config.sort_by { |line| # TODO: define the sort key for the mapper results }
-  end
-```
-4. Run the test from the command line by calling:
+3. Run the test from the command line by calling:
 
   ```
 % rake runner[<job-id>]
@@ -64,7 +57,6 @@ Hasta.configure do |config|
   config.project_root = nil
 
   # optional
-  config.sort_by = nil
   config.local_storage_root = '~/fog'
   config.project_steps = 'steps'
   config.logger = Logger.new(STDOUT)
@@ -110,14 +102,7 @@ Hasta executes mappers and reducers in subprocesses.
 This isolates each job and prevents the modifications to `ENV` and `$LOAD_PATH` described above from leaking into the parent process.
 
 The output of the mapper is sorted before it is processed by the reducer.
-By default, the mapper output is sorted according to its natural sort order.
-If a different sort ordering is required, the `Hasta.sort_by` property can be set to change how the mapper output gets sorted before it is processed by the reducer.
-```ruby
-Hasta.configure do |config|
-  # sort the mapper results in case-insensitive alphabetical order
-  config.sort_by { |line| line.upcase }
-end
-```
+The mapper output is sorted in ascending order, according to the natural sort order for Ruby Strings.
 
 ## Requirements
 

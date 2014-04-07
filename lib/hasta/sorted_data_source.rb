@@ -3,9 +3,8 @@
 module Hasta
   # Decorator for a data source that yields the contents in sorted order
   class SortedDataSource
-    def initialize(data_source, sort_by)
+    def initialize(data_source)
       @data_source = data_source
-      @sort_by = sort_by
     end
 
     def name
@@ -26,16 +25,10 @@ module Hasta
 
     private
 
-    attr_reader :data_source, :sort_by
+    attr_reader :data_source
 
     def sorted_lines
-      sorted = if sort_by
-        data_source.to_a.sort_by(&sort_by)
-      else
-        data_source.to_a.sort
-      end
-
-      sorted.tap do
+      data_source.to_a.sort.tap do
         Hasta.logger.debug "Finished sorting data for source: #{data_source}"
       end
     end

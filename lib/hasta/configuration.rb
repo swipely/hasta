@@ -13,14 +13,6 @@ module Hasta
     attr_accessor :project_root
     attr_writer :local_storage_root, :project_steps, :logger
 
-    def sort_by
-      if block_given?
-        @sort_by = lambda { |key| yield key }
-      end
-
-      @sort_by
-    end
-
     def local_storage_root
       @local_storage_root ||= '~/fog'
     end
