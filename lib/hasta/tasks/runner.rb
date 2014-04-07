@@ -46,7 +46,6 @@ module Hasta
         setup_ivars(args)
 
         desc "Runs the specified EMR job"
-        # { name => [:init_hasta] }
         task name, [:job_id, :scheduled_start_time] do |_, task_args|
           RakeFileUtils.send(:verbose, verbose) do
             if task_block
