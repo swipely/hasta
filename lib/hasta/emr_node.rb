@@ -23,6 +23,29 @@ module Hasta
 
       private
 
+      # Parses the 'step' attribute of an EMR configuration into a Hash
+      # Sample step line:
+      #   "/home/hadoop/contrib/streaming/hadoop-streaming.jar,
+      #    -input,s3n://data-bucket/input1/,
+      #    -output,s3://data-bucket/output/,
+      #    -mapper,cat,
+      #    -reducer,s3n://steps-bucket/path/to/reducer.rb,
+      #    -cacheFile,s3://data-bucket/path/to/mappings.yml#mappings.yml,
+      #    -cacheFile,s3://data-bucket/path/to/ignored.yml#ignored.yml,
+      #    -cmdenv,API_KEY=123456,
+      #    -cmdenv,ENVIRONMENT_NAME=uat"
+      #
+      # Sample output:
+      #   {
+      #     "input" => ["s3n://data-bucket/input1/"],
+      #     "output"=> ["s3://data-bucket/output/"],
+      #     "mapper => ["cat"],
+      #     "reducer" => ["s3n://steps-bucket/path/to/reducer.rb"],
+      #     "cacheFile" => ["s3://data-bucket/path/to/mappings.yml#mappings.yml",
+      #       "s3://data-bucket/path/to/ignored.yml#ignored.yml"],
+      #     "cmdenv" => ["API_KEY=123456", "ENVIRONMENT_NAME=uat"]
+      #   }
+      #
       def parse_step_line(step)
         parsed = Hash.new { |h, k| h[k] = [] }
         step.
