@@ -19,7 +19,7 @@ module Hasta
       return enum_for(:each_line) unless block_given?
 
       combined_storage.files_for(s3_uri).each do |file|
-        Hasta.logger.debug "Processing file: #{file.key}"
+        Hasta.logger.debug "Processing #{file.class}: #{file.key}"
         StringIO.new(file.body).each_line { |line| yield line }
       end
     end
