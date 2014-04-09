@@ -3,8 +3,24 @@ require 'spec_helper'
 require 'hasta/emr_job_definition'
 
 describe Hasta::EmrJobDefinition do
+  shared_context 'with a filter defined' do
+    before do
+      Hasta.configure do |config|
+        config.filters = Hasta::Filters.new({ 's3://my-bucket' => ['.*'] })
+      end
+    end
+
+    after do
+      Hasta.configure do |config|
+        config.filters = nil
+      end
+    end
+  end
+
   describe '.load' do
     subject { described_class.load(file_path, id) }
+
+    include_context 'with a filter defined'
 
     let(:file_path) { 'spec/fixtures/hasta/json/pipeline_definition.json' }
 
@@ -140,6 +156,8 @@ describe Hasta::EmrJobDefinition do
   describe '#env' do
     subject { described_class.new(emr_node) }
 
+    include_context 'with a filter defined'
+
     let(:emr_node) { Hasta::EmrNode.new(:cache_files => cache_files, :env => env_vars) }
     let(:s3_uri) { Hasta::S3URI.parse('s3://data-bucket/path/to/database.yml') }
     let(:cache_files) { [ "#{s3_uri.to_s}#database.yml" ] }
@@ -151,6 +169,8 @@ describe Hasta::EmrJobDefinition do
 
   describe '#data_sink' do
     subject { described_class.new(emr_node) }
+
+    include_context 'with a filter defined'
 
     let(:emr_node) { Hasta::EmrNode.new(:output_path => output_path) }
     let(:output_path) { 's3://data-bucket/path/to/data/2014-03-31_192134/output/' }

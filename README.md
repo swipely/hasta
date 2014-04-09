@@ -60,6 +60,7 @@ Hasta.configure do |config|
 
   # optional
   config.local_storage_root = '~/fog'
+  config.cache_storage_root = '~/.hasta'
   config.project_steps = 'steps'
   config.logger = Logger.new(STDOUT)
 end
@@ -102,6 +103,7 @@ Hasta caches the filtered input data locally to improve performance.
 The first time a data source is referenced in a test, the filtered results are written locally.
 Subsequent tests that access the same data source with the same filter are read from the local cache.
 This results in a significant speedup on subsequent runs when dealing with aggressively filtered large data sets.
+By default, the files are written to the `~/.hasta/cache` directory, but this can be controlled using the `cache_storage_root` configuration setting.
 
 ## Execution
 
