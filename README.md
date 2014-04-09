@@ -1,4 +1,5 @@
 # Hasta
+[![travis-ci](https://travis-ci.org/swipely/hasta.png?branch=master)](https://travis-ci.org/swipely/hasta)
 
 <b>HA</b>doop <b>S</b>treaming <b>T</b>est h<b>A</b>rness for Amazon EMR
 
