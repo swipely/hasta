@@ -5,8 +5,16 @@ require 'hasta/s3_file'
 module Hasta
   # Common file storage methods used by the local and S3 storage providers
   module Storage
-    def initialize(fog_storage)
+    # Creates the appropriate Hasta S3 file instance given a Fog file
+    module ResolveS3File
+      def self.resolve(fog_file)
+        S3File.wrap(fog_file)
+      end
+    end
+
+    def initialize(fog_storage, s3_file_resolver = ResolveS3File)
       @fog_storage = fog_storage
+      @s3_file_resolver = s3_file_resolver
     end
 
     def exists?(s3_uri)
@@ -27,18 +35,18 @@ module Hasta
 
     private
 
-    attr_reader :fog_storage
+    attr_reader :fog_storage, :s3_file_resolver
 
     def bucket(s3_uri)
       fog_storage.directories.get(s3_uri.bucket)
     end
 
     def s3_file!(s3_uri)
-      S3File.wrap(fog_file!(s3_uri))
+      s3_file_resolver.resolve(fog_file!(s3_uri))
     end
 
     def s3_files(bucket, s3_uri)
-      fog_files(bucket, s3_uri).map { |fog_file| S3File.wrap(fog_file) }
+      fog_files(bucket, s3_uri).map { |fog_file| s3_file_resolver.resolve(fog_file) }
     end
 
     def fog_file(s3_uri)
