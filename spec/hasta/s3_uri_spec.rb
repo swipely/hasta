@@ -14,6 +14,7 @@ describe Hasta::S3URI do
 
       it { expect(subject.bucket).to eq(bucket) }
       it { expect(subject.path).to be_nil }
+      it { expect(subject.depth).to eq(1) }
     end
 
     context 'given a bucket and a file path' do
@@ -23,6 +24,7 @@ describe Hasta::S3URI do
 
       it { expect(subject.bucket).to eq(bucket) }
       it { expect(subject.path).to eq(path) }
+      it { expect(subject.depth).to eq(4) }
     end
 
     context 'given a bucket and a directory path' do
@@ -32,6 +34,7 @@ describe Hasta::S3URI do
 
       it { expect(subject.bucket).to eq(bucket) }
       it { expect(subject.path).to eq(path) }
+      it { expect(subject.depth).to eq(4) }
     end
 
     context 'given an s3n URI with a bucket and a directory path' do
@@ -41,6 +44,7 @@ describe Hasta::S3URI do
 
       it { expect(subject.bucket).to eq(bucket) }
       it { expect(subject.path).to eq(path) }
+      it { expect(subject.depth).to eq(4) }
     end
 
     context 'given an invalid uri' do
@@ -63,6 +67,12 @@ describe Hasta::S3URI do
 
     context 'given a directory path' do
       let(:path) { 'path/to/files/' }
+
+      it { expect(subject).to_not be_file }
+    end
+
+    context 'given a bucket only path' do
+      let(:path) { nil }
 
       it { expect(subject).to_not be_file }
     end
@@ -147,5 +157,25 @@ describe Hasta::S3URI do
 
       it { expect(subject.parent).to eq(described_class.new(bucket, 'path/to/my/')) }
     end
+  end
+
+  describe '#start_with?' do
+    subject { described_class.new(bucket, path) }
+
+    let(:bucket) { 'my-bucket' }
+    let(:path) { 'path/to/my/favorite/file.txt' }
+
+    let(:other_bucket_uri) { described_class.new('some-other-bucket', path) }
+    let(:other_path_uri) { described_class.new(bucket, 'path/to/your/favorite/file.txt') }
+    let(:similar_prefix_uri) { described_class.new(bucket, 'path/to/my/fav') }
+    let(:bucket_only_uri) { described_class.new(bucket, nil) }
+
+    it { expect(subject.start_with?(subject)).to be_true }
+    it { expect(subject.start_with?(subject.parent)).to be_true }
+    it { expect(subject.start_with?(subject.parent.parent)).to be_true }
+    it { expect(subject.start_with?(other_bucket_uri)).to be_false }
+    it { expect(subject.start_with?(other_path_uri)).to be_false }
+    it { expect(subject.start_with?(similar_prefix_uri)).to be_false }
+    it { expect(subject.start_with?(bucket_only_uri)).to be_true }
   end
 end

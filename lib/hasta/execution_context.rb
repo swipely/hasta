@@ -16,7 +16,7 @@ module Hasta
         @env = env
       end
 
-      def start(source_file, data_source, data_sink)
+      def start(source_file)
         Open3.popen3(*cmd_line(source_file)) do |stdin, stdout, stderr, wait_thr|
           @stdin, @stdout, @stderr, @wait_thr = stdin, stdout, stderr, wait_thr
 
@@ -54,7 +54,7 @@ module Hasta
     end
 
     def execute(source_file, data_source, data_sink)
-      sub_process.start(source_file, data_source, data_sink) do |sub_process|
+      sub_process.start(source_file) do |sub_process|
         [
           stream_input(data_source, sub_process.stdin),
           stream_output(sub_process.stdout) { |line| data_sink << line },

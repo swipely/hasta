@@ -1,0 +1,3 @@
+---
+s3://my-bucket:
+- \AOnly Allow This Line\z

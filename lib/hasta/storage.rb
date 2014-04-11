@@ -1,37 +1,55 @@
 # Copyright Swipely, Inc.  All rights reserved.
 
+require 'hasta/s3_file'
+
 module Hasta
   # Common file storage methods used by the local and S3 storage providers
   module Storage
-    def initialize(fog_storage)
+    # Creates the appropriate Hasta S3 file instance given a Fog file
+    module ResolveS3File
+      def self.resolve(fog_file)
+        S3File.wrap(fog_file)
+      end
+    end
+
+    def initialize(fog_storage, s3_file_resolver = ResolveS3File)
       @fog_storage = fog_storage
+      @s3_file_resolver = s3_file_resolver
     end
 
     def exists?(s3_uri)
       if s3_uri.file?
-        !!file(s3_uri)
+        !!fog_file(s3_uri)
       elsif s3_bucket = bucket(s3_uri)
-        !files(s3_bucket, s3_uri).empty?
+        !fog_files(s3_bucket, s3_uri).empty?
       end
     end
 
     def files_for(s3_uri)
       if s3_uri.file?
-        [file!(s3_uri)]
+        [s3_file!(s3_uri)]
       else
-        files(bucket!(s3_uri), s3_uri)
+        s3_files(bucket!(s3_uri), s3_uri)
       end
     end
 
     private
 
-    attr_reader :fog_storage
+    attr_reader :fog_storage, :s3_file_resolver
 
     def bucket(s3_uri)
       fog_storage.directories.get(s3_uri.bucket)
     end
 
-    def file(s3_uri)
+    def s3_file!(s3_uri)
+      s3_file_resolver.resolve(fog_file!(s3_uri))
+    end
+
+    def s3_files(bucket, s3_uri)
+      fog_files(bucket, s3_uri).map { |fog_file| s3_file_resolver.resolve(fog_file) }
+    end
+
+    def fog_file(s3_uri)
       (s3_bucket = bucket(s3_uri)) && s3_bucket.files.get(s3_uri.path)
     end
 
@@ -39,8 +57,8 @@ module Hasta
       bang!(s3_uri) { bucket(s3_uri) }
     end
 
-    def file!(s3_uri)
-      bang!(s3_uri) { file(s3_uri) }
+    def fog_file!(s3_uri)
+      bang!(s3_uri) { fog_file(s3_uri) }
     end
 
     def create_bucket(bucket_name)

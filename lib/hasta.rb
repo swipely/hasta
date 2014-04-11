@@ -14,6 +14,7 @@ module Hasta
   NonExistentPath = Class.new(Error)
   ClassLoadError = Class.new(Error)
   ExecutionError = Class.new(Error)
+  ConfigurationError = Class.new(Error)
 
   DELEGATED_ATTRS = [
     :combined_storage,
