@@ -73,7 +73,9 @@ module Hasta
     end
 
     def output_path
-      @output_path ||= interpolate(attributes[:output_path])
+      if attributes[:output_path]
+        @output_path ||= interpolate(attributes[:output_path])
+      end
     end
 
     def mapper
