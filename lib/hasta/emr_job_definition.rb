@@ -38,7 +38,11 @@ module Hasta
     end
 
     def output_path
-      @output_path ||= S3URI.parse(emr_node.output_path)
+      if emr_node.output_path
+        @output_path ||= S3URI.parse(emr_node.output_path)
+      end
+
+      @output_path
     end
 
     def env
@@ -74,7 +78,7 @@ module Hasta
     end
 
     def data_sink
-      @data_sink ||= S3DataSink.new(output_path)
+      @data_sink ||= (output_path ? S3DataSink.new(output_path) : InMemoryDataSink.new("EMR Output"))
     end
 
     private
