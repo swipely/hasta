@@ -52,7 +52,7 @@ Or install it yourself as:
 
 ## Configuration
 
-The following code snippet illustrates how to update the global Hasta configuration, which values are mandatory, and which values have defaults.
+The following code snippet illustrates how to update the global Hasta configuration, which values are mandatory, and which values have defaults.  This should go in the Rakefile as well.
 
 ```ruby
 Hasta.configure do |config|
