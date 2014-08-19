@@ -34,7 +34,8 @@ Or install it yourself as:
   Hasta::Tasks::Runner.new do |task, opts|
     task.definition_file = <path-to-AWS-datapipeline-definition-json-file>
     task.job_id = opts[:job_id]
-    task.scheduled_start_time = Time.parse(opts[:scheduled_start_time])
+    scheduled_start_time = opts[:scheduled_start_time]
+    task.scheduled_start_time = scheduled_start_time.nil? ? Time.now : Time.parse(scheduled_start_time)
     task.project_root = File.dirname(__FILE__)
   end
 ```
