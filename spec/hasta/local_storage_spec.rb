@@ -7,8 +7,18 @@ require 'hasta/local_file_path'
 describe Hasta::LocalStorage do
   subject { described_class.new(fog_storage) }
 
+  before do
+    Hasta.configure do |conf|
+      @original_storage_root = conf.local_storage_root
+      conf.local_storage_root = tmpdir
+    end
+  end
+
   after do
     FileUtils.rm_rf(tmpdir)
+    Hasta.configure do |conf|
+      conf.local_storage_root = @original_storage_root
+    end
   end
 
   let(:fog_storage) {
@@ -30,7 +40,7 @@ describe Hasta::LocalStorage do
     let(:content) { "Hi\nBye\nWhy?\n" }
     let(:data_source) { StringIO.new(content) }
 
-    let(:result) { subject.write(s3_uri, data_source) }
+    let!(:result) { subject.write(s3_uri, data_source) }
     let(:local_file_path) { Hasta::LocalFilePath.for(result) }
 
     context 'given a directory uri' do
