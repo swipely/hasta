@@ -85,7 +85,8 @@ module Hasta
     end
 
     def cache_files
-      @cache_files ||= Hash[attributes[:cache_files].map { |value| interpolate(value).split('#').reverse }]
+      files = attributes[:cache_files]
+      @cache_files ||= Hash[files.map { |value| interpolate(value).split('#').reverse }]
     end
 
     def env
