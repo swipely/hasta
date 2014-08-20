@@ -19,6 +19,7 @@ describe Hasta::EmrNode do
     {
       'mappings.yml' => 's3://data-bucket/path/to/mappings.yml',
       'ignored.yml' => 's3://data-bucket/path/to/ignored.yml',
+      'timestamped.yml' => 's3://data-bucket/2014-03-28_195039/timestamped.yml'
     }
   }
 
